@@ -10,7 +10,7 @@ import { loadEnvFiles } from "../utils/env";
 import { Logger } from "../utils/logger";
 import { networkRetry as _networkRetry } from '../utils/network-retry'
 
-const logger = new Logger(`AzDownload`);
+const logger = new Logger(`AzDelBlob`);
 main().catch(logger.fatal);
 
 function usage() {

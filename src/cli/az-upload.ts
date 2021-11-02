@@ -158,7 +158,7 @@ async function main() {
       const block = blocks[i];
       const now = Date.now() / 1000;
       const elapsed = (now - from).toFixed(0);
-      logger.log(`uploading no.${i + 1} block "${block.uuid}" +${elapsed}s`);
+      logger.log(`uploading block ${i + 1}/${blocks.length} "${block.uuid}" +${elapsed}s`);
       await networkRetry(() => azPutBlock({ logger, connect, blob: firstBlob, block }), 5);
     }
 

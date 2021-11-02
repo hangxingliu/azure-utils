@@ -1,6 +1,6 @@
 import * as fs from "fs";
 
-import { uuidv4 } from "../crypto";
+import { uuidv4Base64 } from "../crypto";
 
 export const azBlockSize = 1024 * 1024 * 60; // 62MiB
 export const azBlockSizeSmall = 1024 * 1024 * 2; // 2MiB
@@ -25,7 +25,7 @@ export function getBlocksFormLocalFile(file: string): LocalFileBlock[] {
   const result: LocalFileBlock[] = [];
   while (startPos < fileSize) {
     const endPos = Math.min(startPos + azBlockSize, fileSize);
-    const uuid = uuidv4()
+    const uuid = uuidv4Base64()
     result.push({ uuid, file, fileSize, index, startPos, endPos });
     startPos = endPos;
     index++;

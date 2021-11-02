@@ -104,6 +104,13 @@ function uuidv4() {
     rnds[8] = (rnds[8] & 0x3f) | 0x80;
     return stringify(rnds);
 }
+function uuidv4Base64() {
+    const rnds = rng();
+    // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+    rnds[6] = (rnds[6] & 0x0f) | 0x40;
+    rnds[8] = (rnds[8] & 0x3f) | 0x80;
+    return Buffer.from(rnds).toString('base64');
+}
 function hmacSHA256(key, data) {
     const hmac = external_crypto_namespaceObject.createHmac("sha256", Buffer.from(key, "base64"));
     hmac.update(data);
@@ -454,7 +461,7 @@ function getBlocksFormLocalFile(file) {
     const result = [];
     while (startPos < fileSize) {
         const endPos = Math.min(startPos + azBlockSize, fileSize);
-        const uuid = uuidv4();
+        const uuid = uuidv4Base64();
         result.push({ uuid, file, fileSize, index, startPos, endPos });
         startPos = endPos;
         index++;
@@ -848,7 +855,7 @@ async function main() {
             const block = blocks[i];
             const now = Date.now() / 1000;
             const elapsed = (now - from).toFixed(0);
-            az_upload_logger.log(`uploading no.${i + 1} block "${block.uuid}" +${elapsed}s`);
+            az_upload_logger.log(`uploading block ${i + 1}/${blocks.length} "${block.uuid}" +${elapsed}s`);
             await networkRetry(() => azPutBlock({ logger: az_upload_logger, connect, blob: firstBlob, block }), 5);
         }
         const blockUUIDs = blocks.map(it => it.uuid);

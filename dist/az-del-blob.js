@@ -171,6 +171,13 @@ function uuidv4() {
     rnds[8] = (rnds[8] & 0x3f) | 0x80;
     return stringify(rnds);
 }
+function uuidv4Base64() {
+    const rnds = rng();
+    // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+    rnds[6] = (rnds[6] & 0x0f) | 0x40;
+    rnds[8] = (rnds[8] & 0x3f) | 0x80;
+    return Buffer.from(rnds).toString('base64');
+}
 function hmacSHA256(key, data) {
     const hmac = external_crypto_namespaceObject.createHmac("sha256", Buffer.from(key, "base64"));
     hmac.update(data);
@@ -363,7 +370,7 @@ class Logger {
 
 
 
-const logger = new Logger(`AzDownload`);
+const logger = new Logger(`AzDelBlob`);
 main().catch(logger.fatal);
 function usage() {
     const bin = 'az-del-blob';
