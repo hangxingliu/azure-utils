@@ -1,6 +1,6 @@
 # azure-utils
 
-![Github Action Status](https://github.com/hangxingliu/azure-utils/actions/workflows/main.yml/badge.svg?branch=main)
+![Github Action Status](https://github.com/hangxingliu/azure-utils/actions/workflows/main.yaml/badge.svg?branch=main)
 
 Standalone Node.js utils for Azure
 
