@@ -59,10 +59,12 @@ export function azCopyBlob(args: CopyBlobArgs): Promise<CopyBlobResult> {
     let statusCode = -1;
     let contentType = '';
     let data = '';
+
+    const apiPath = `/${container}/${encodeURI(blob)}`;
     logger.log(`request copy api uri="${accountName}/${container}/${blob}" x-ms-copy-source="${sourceName}" ...`)
     const req = request({
       host: getAzureBlobHost(connect),
-      path: `/${container}/${blob}`,
+      path: apiPath,
       method,
       headers: {
         Authorization: authorization,

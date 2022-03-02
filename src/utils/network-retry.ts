@@ -58,6 +58,8 @@ export async function networkRetry<T>(fn: () => Promise<T>, retries = 3, waitSec
 
         logger.error(`network error ${sysError.errno}, waiting ${waitSeconds} seconds and retry ...`);
         await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
+      } else {
+        throw error;
       }
     }
   }

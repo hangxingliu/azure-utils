@@ -39,10 +39,12 @@ export function azDelBlob(args: DelBlobArgs): Promise<DelBlobResult> {
     let statusCode = -1;
     let contentType = '';
     let data = '';
-    logger.log(`request delete api uri="${accountName}/${container}/${blob}" ...`)
+
+    const apiPath = `/${container}/${encodeURI(blob)}`;
+    logger.log(`request delete api uri="${apiPath}" ...`)
     const req = request({
       host: getAzureBlobHost(connect),
-      path: `/${container}/${blob}`,
+      path: apiPath,
       method,
       headers: {
         Authorization: authorization,

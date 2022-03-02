@@ -54,8 +54,8 @@ export function azPutBlock(args: PutBlockArgs): Promise<PutBlockResult> {
     let contentType = '';
     let data = '';
 
-    const apiPath = `/${container}/${blob}?comp=block&blockid=${encodeURIComponent(block.uuid)}`;
-    logger.log(`request put block api uri="${apiPath}" size=${size} ...`)
+    const apiPath = `/${container}/${encodeURI(blob)}?comp=block&blockid=${encodeURIComponent(block.uuid)}`;
+    logger.log(`request put block api uri="${apiPath}" size=${size} ...`);
 
     const req = request({
       host: getAzureBlobHost(connect),

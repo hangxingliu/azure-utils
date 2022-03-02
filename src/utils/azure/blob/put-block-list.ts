@@ -49,10 +49,12 @@ export function azPutBlockList(args: PutBlobListArgs): Promise<PutBlockListResul
     let statusCode = -1;
     let contentType = '';
     let data = '';
-    logger.log(`request put block list api uri="/${container}/${blob}?comp=blocklist" ...`)
+
+    const apiPath = `/${container}/${encodeURI(blob)}?comp=blocklist`;
+    logger.log(`request put block list api uri="${apiPath}" ...`)
     const req = request({
       host: getAzureBlobHost(connect),
-      path: `/${container}/${blob}?comp=blocklist`,
+      path: apiPath,
       method,
       headers: {
         Authorization: authorization,

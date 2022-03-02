@@ -16,7 +16,7 @@ export function createSharedKeyLite(args: SharedKeyLiteArgs) {
 
   let canonicalizedResource = `/${accountName}`;
   if (container) canonicalizedResource += container.replace(/^\/*/, '/');
-  if (resourceUri) canonicalizedResource += resourceUri.replace(/^\/*/, '/');
+  if (resourceUri) canonicalizedResource += encodeURI(resourceUri).replace(/^\/*/, '/');
 
   if (args.qs) {
     const pickKeys = new Set(['comp']);

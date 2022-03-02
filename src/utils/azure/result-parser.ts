@@ -1,3 +1,5 @@
+import { decodeXml } from "./xml-entities";
+
 export type BlobItemInListResult = {
   name: string;
   size: number;
@@ -24,7 +26,7 @@ export function parseListBlobsResult(xml: string): ParsedListResult {
     blob.xml = blobXML;
 
     result = matchBetween(blobXML, "<Name>", "</Name>", 0);
-    if (result) blob.name = result.matched;
+    if (result) blob.name = decodeXml(result.matched);
 
     result = matchBetween(blobXML, "<Content-Length>", "</Content-Length>", 0);
     if (result) blob.size = parseInt(result.matched, 10);
@@ -50,3 +52,4 @@ function matchBetween(str: string, left: string, right: string, startPos = 0) {
   if (j < 0) return;
   return { matched: str.slice(i, j), next: j + right.length };
 }
+

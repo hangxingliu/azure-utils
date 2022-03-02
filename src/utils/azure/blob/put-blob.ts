@@ -56,7 +56,7 @@ export function azPutBlob(args: PutBlobArgs): Promise<PutBlobResult> {
     let contentType = '';
     let data = '';
 
-    const apiPath = `/${container}/${blob}`;
+    const apiPath = `/${container}/${encodeURI(blob)}`;
     logger.log(`request put blob api uri="${apiPath}" size=${size} ...`)
     const req = request({
       host: getAzureBlobHost(connect),
