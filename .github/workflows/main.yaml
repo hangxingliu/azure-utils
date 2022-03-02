@@ -1,15 +1,36 @@
-name: test-sources
+name: ci
+
+# https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads
+# https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  - push
+  - pull_request
+  - workflow_dispatch
 
 jobs:
+
+  check-repo:
+    runs-on: ubuntu-latest
+    name: 'Check is this action in particular repo'
+    if: ${{ github.event.repository.name == 'azure-utils' }}
+    steps:
+      - name: 'Print action info'
+        run: echo "event=${{ github.event_name }} event_ref=${{ github.event.ref }} repo=${{ github.event.repository.full_name }}"
+
+  is-push-to-main:
+    runs-on: ubuntu-latest
+    name: 'Is triggered by push to main?'
+    needs: check-repo
+    if: ${{
+      (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
+      ((github.event_name == 'push') || github.event_name == 'workflow_dispatch') }}
+    steps:
+      - name: 'Current action is triggered by push to main'
+        run: 'true'
+
   build:
     runs-on: ubuntu-latest
+    needs: is-push-to-main
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -18,3 +39,11 @@ jobs:
           yarn install &&
           yarn run test &&
           yarn run build
+      - name: Integration test
+        env:
+          AZURE_STORAGE_CONTAINER: test
+          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+        run: |
+          if test -n "$AZURE_STORAGE_CONNECTION_STRING"; then
+            ./test/integration.sh >/dev/null || exit 1;
+          fi

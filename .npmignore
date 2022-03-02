@@ -23,6 +23,7 @@ yarn-error.log*
 
 # Test files
 /test
+/tests
 
 # Source files
 /src
