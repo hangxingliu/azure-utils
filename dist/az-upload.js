@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-global.__version='1.0.0';
+global.__version='1.1.0';
 
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
@@ -136,7 +136,7 @@ function createSharedKeyLite(args) {
     if (container)
         canonicalizedResource += container.replace(/^\/*/, '/');
     if (resourceUri)
-        canonicalizedResource += resourceUri.replace(/^\/*/, '/');
+        canonicalizedResource += encodeURI(resourceUri).replace(/^\/*/, '/');
     if (args.qs) {
         const pickKeys = new Set(['comp']);
         const qs = [];
@@ -205,7 +205,7 @@ function azPutBlob(args) {
         let statusCode = -1;
         let contentType = '';
         let data = '';
-        const apiPath = `/${container}/${blob}`;
+        const apiPath = `/${container}/${encodeURI(blob)}`;
         logger.log(`request put blob api uri="${apiPath}" size=${size} ...`);
         const req = (0,external_https_namespaceObject.request)({
             host: getAzureBlobHost(connect),
@@ -279,10 +279,11 @@ function azCopyBlob(args) {
         let statusCode = -1;
         let contentType = '';
         let data = '';
+        const apiPath = `/${container}/${encodeURI(blob)}`;
         logger.log(`request copy api uri="${accountName}/${container}/${blob}" x-ms-copy-source="${sourceName}" ...`);
         const req = (0,external_https_namespaceObject.request)({
             host: getAzureBlobHost(connect),
-            path: `/${container}/${blob}`,
+            path: apiPath,
             method,
             headers: {
                 Authorization: authorization,
@@ -343,10 +344,11 @@ function azPutBlockList(args) {
         let statusCode = -1;
         let contentType = '';
         let data = '';
-        logger.log(`request put block list api uri="/${container}/${blob}?comp=blocklist" ...`);
+        const apiPath = `/${container}/${encodeURI(blob)}?comp=blocklist`;
+        logger.log(`request put block list api uri="${apiPath}" ...`);
         const req = (0,external_https_namespaceObject.request)({
             host: getAzureBlobHost(connect),
-            path: `/${container}/${blob}?comp=blocklist`,
+            path: apiPath,
             method,
             headers: {
                 Authorization: authorization,
@@ -410,7 +412,7 @@ function azPutBlock(args) {
         let statusCode = -1;
         let contentType = '';
         let data = '';
-        const apiPath = `/${container}/${blob}?comp=block&blockid=${encodeURIComponent(block.uuid)}`;
+        const apiPath = `/${container}/${encodeURI(blob)}?comp=block&blockid=${encodeURIComponent(block.uuid)}`;
         logger.log(`request put block api uri="${apiPath}" size=${size} ...`);
         const req = (0,external_https_namespaceObject.request)({
             host: getAzureBlobHost(connect),
@@ -664,6 +666,9 @@ async function network_retry_networkRetry(fn, retries = 3, waitSeconds = 15) {
                     throw error;
                 logger.error(`network error ${sysError.errno}, waiting ${waitSeconds} seconds and retry ...`);
                 await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
+            }
+            else {
+                throw error;
             }
         }
     }

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-global.__version='1.0.0';
+global.__version='1.1.0';
 
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
@@ -533,6 +533,9 @@ async function main() {
             default: resolvePositionalArgs();
         }
     }
+    const isToStdout = local === '-';
+    if (isToStdout)
+        logger.setLogDest('stderr');
     if (!remote)
         return usage();
     if (!local)
@@ -568,27 +571,34 @@ async function main() {
     }
     if (!blob)
         blob = remote.replace(/^\//, '');
-    let localAsDir = false;
-    try {
-        const stat = external_fs_namespaceObject.statSync(local);
-        if (stat.isDirectory())
-            localAsDir = true;
-    }
-    catch (error) { }
     let targetFile;
-    if (localAsDir) {
-        targetFile = external_path_namespaceObject.join(local, external_path_namespaceObject.basename(blob));
+    if (isToStdout) {
+        logger.log(`local=<stdout>`);
     }
-    else {
-        targetFile = local;
+    else if (!onlyURL) {
+        let localAsDir = false;
+        try {
+            const stat = external_fs_namespaceObject.statSync(local);
+            if (stat.isDirectory())
+                localAsDir = true;
+        }
+        catch (error) { }
+        if (localAsDir) {
+            targetFile = external_path_namespaceObject.join(local, external_path_namespaceObject.basename(blob));
+        }
+        else {
+            targetFile = local;
+        }
+        logger.log(`local=${targetFile}`);
     }
-    logger.log(`local=${targetFile}`);
     const result = createSASForBlob({ connect, blob });
     if (onlyURL)
         return console.log(result.url);
     const startedAt = Date.now();
-    const localFileName = external_path_namespaceObject.basename(targetFile);
-    const stream = external_fs_namespaceObject.createWriteStream(targetFile);
+    const localFileName = isToStdout ? 'stdout' : `"${external_path_namespaceObject.basename(targetFile)}"`;
+    const stream = isToStdout
+        ? process.stdout
+        : external_fs_namespaceObject.createWriteStream(targetFile);
     const { contentMD5 } = await downlaodToStream({
         url: result.url,
         stream,
@@ -604,10 +614,11 @@ async function main() {
             }
         }
     });
-    stream.close();
+    if (!isToStdout)
+        stream.close();
     const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-    logger.log(`downloaded to "${localFileName}" +${elapsed}s`);
-    if (contentMD5) {
+    logger.log(`downloaded to ${localFileName} +${elapsed}s`);
+    if (!isToStdout && contentMD5) {
         const localMD5 = await getFileMD5Base64(targetFile);
         if (contentMD5 !== localMD5)
             throw new Error(`md5sums are different between local and remote, local md5sum is "${localMD5}"`);

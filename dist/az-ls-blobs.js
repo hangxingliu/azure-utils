@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-global.__version='1.0.0';
+global.__version='1.1.0';
 
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
@@ -22,8 +22,6 @@ global.__version='1.0.0';
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-
-// UNUSED EXPORTS: resolveListFilesXML
 
 ;// CONCATENATED MODULE: ./src/utils/azure/env.ts
 /**
@@ -203,7 +201,7 @@ function createSharedKeyLite(args) {
     if (container)
         canonicalizedResource += container.replace(/^\/*/, '/');
     if (resourceUri)
-        canonicalizedResource += resourceUri.replace(/^\/*/, '/');
+        canonicalizedResource += encodeURI(resourceUri).replace(/^\/*/, '/');
     if (args.qs) {
         const pickKeys = new Set(['comp']);
         const qs = [];
@@ -429,6 +427,9 @@ async function networkRetry(fn, retries = 3, waitSeconds = 15) {
                 logger.error(`network error ${sysError.errno}, waiting ${waitSeconds} seconds and retry ...`);
                 await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
             }
+            else {
+                throw error;
+            }
         }
     }
 }
@@ -470,7 +471,156 @@ function getHumanReadableFileSize(bytes, si = false, dp = 1) {
     return bytes.toFixed(dp) + ' ' + units[u];
 }
 
+;// CONCATENATED MODULE: ./src/utils/azure/xml-entities.ts
+/**!
+ * @see https://github.com/mdevils/html-entities
+ * @license MIT
+ * @author mdevils "Marat Dulin"
+ */
+/**
+ * @see https://github.com/mdevils/html-entities/blob/master/src/named-references.ts
+ */
+const namedXmlCharacters = {
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&apos;",
+    "&": "&amp;",
+};
+const namedXmlEntities = {};
+Object.keys(namedXmlCharacters).forEach((ch) => (namedXmlEntities[namedXmlCharacters[ch]] = ch));
+const fromCharCode = String.fromCharCode;
+const fromCodePoint = String.fromCodePoint ||
+    function (astralCodePoint) {
+        return String.fromCharCode(Math.floor((astralCodePoint - 0x10000) / 0x400) + 0xd800, ((astralCodePoint - 0x10000) % 0x400) + 0xdc00);
+    };
+const outOfBoundsChar = fromCharCode(65533);
+const numericUnicodeMap = {
+    0: 65533,
+    128: 8364,
+    130: 8218,
+    131: 402,
+    132: 8222,
+    133: 8230,
+    134: 8224,
+    135: 8225,
+    136: 710,
+    137: 8240,
+    138: 352,
+    139: 8249,
+    140: 338,
+    142: 381,
+    145: 8216,
+    146: 8217,
+    147: 8220,
+    148: 8221,
+    149: 8226,
+    150: 8211,
+    151: 8212,
+    152: 732,
+    153: 8482,
+    154: 353,
+    155: 8250,
+    156: 339,
+    158: 382,
+    159: 376,
+};
+/**
+ * @see https://github.com/mdevils/html-entities/blob/master/src/index.ts
+ */
+function decodeXmlEntity(entity) {
+    if (!entity)
+        return "";
+    let decodeResult = entity;
+    const decodeResultByReference = namedXmlEntities[entity];
+    if (decodeResultByReference) {
+        decodeResult = decodeResultByReference;
+    }
+    else if (entity[0] === "&" && entity[1] === "#") {
+        const decodeSecondChar = entity[2];
+        const decodeCode = decodeSecondChar == "x" || decodeSecondChar == "X"
+            ? parseInt(entity.substr(3), 16)
+            : parseInt(entity.substr(2));
+        decodeResult =
+            decodeCode >= 0x10ffff
+                ? outOfBoundsChar
+                : decodeCode > 65535
+                    ? fromCodePoint(decodeCode)
+                    : fromCharCode(numericUnicodeMap[decodeCode] || decodeCode);
+    }
+    return decodeResult;
+}
+function decodeXml(xml) {
+    if (!xml)
+        return "";
+    const macroRegExp = /&(?:#\d+|#[xX][\da-fA-F]+|[0-9a-zA-Z]+);/g;
+    macroRegExp.lastIndex = 0;
+    let replaceMatch = macroRegExp.exec(xml);
+    let replaceResult;
+    if (replaceMatch) {
+        replaceResult = "";
+        let replaceLastIndex = 0;
+        do {
+            if (replaceLastIndex !== replaceMatch.index) {
+                replaceResult += xml.substring(replaceLastIndex, replaceMatch.index);
+            }
+            const replaceInput = replaceMatch[0];
+            replaceResult += decodeXmlEntity(replaceInput);
+            replaceLastIndex = replaceMatch.index + replaceInput.length;
+        } while ((replaceMatch = macroRegExp.exec(xml)));
+        if (replaceLastIndex !== xml.length) {
+            replaceResult += xml.substring(replaceLastIndex);
+        }
+    }
+    else {
+        replaceResult = xml;
+    }
+    return replaceResult;
+}
+
+;// CONCATENATED MODULE: ./src/utils/azure/result-parser.ts
+
+function parseListBlobsResult(xml) {
+    let blobs = [];
+    let startPos = 0;
+    while (startPos >= 0) {
+        let result = matchBetween(xml, "<Blob>", "</Blob>", startPos);
+        if (!result)
+            break;
+        startPos = result.next;
+        let blob = { name: "", size: 0, mtime: null, md5: "", xml: "" };
+        const blobXML = result.matched;
+        blob.xml = blobXML;
+        result = matchBetween(blobXML, "<Name>", "</Name>", 0);
+        if (result)
+            blob.name = decodeXml(result.matched);
+        result = matchBetween(blobXML, "<Content-Length>", "</Content-Length>", 0);
+        if (result)
+            blob.size = parseInt(result.matched, 10);
+        result = matchBetween(blobXML, "<Last-Modified>", "</Last-Modified>", 0);
+        if (result)
+            blob.mtime = new Date(result.matched);
+        result = matchBetween(blobXML, "<Content-MD5>", "</Content-MD5>", 0);
+        if (result)
+            blob.md5 = Buffer.from(result.matched, "base64").toString("hex");
+        blobs.push(blob);
+    }
+    const result = matchBetween(xml, "<NextMarker>", "</NextMarker>");
+    return { blobs, next: result === null || result === void 0 ? void 0 : result.matched };
+}
+function matchBetween(str, left, right, startPos = 0) {
+    let i = str.indexOf(left, startPos);
+    if (i < 0)
+        return;
+    i += left.length;
+    const j = str.indexOf(right, i);
+    if (j < 0)
+        return;
+    return { matched: str.slice(i, j), next: j + right.length };
+}
+
 ;// CONCATENATED MODULE: ./src/cli/az-ls-blobs.ts
+
 
 
 
@@ -581,7 +731,7 @@ async function main() {
     if (limit)
         az_ls_blobs_logger.log(`limit=${limit}`);
     const xml = await networkRetry(() => azListBlobs({ prefix, logger: az_ls_blobs_logger, connect, maxresults: limit }), 2, 5);
-    const { blobs, next } = resolveListFilesXML(xml);
+    const { blobs, next } = parseListBlobsResult(xml);
     const items = [['Name', 'Size', 'Modified Date', 'MD5']].concat(blobs.map(blob => [blob.name, getHumanReadableFileSize(blob.size), blob.mtime.toJSON(), blob.md5]));
     const colWidths = new Array(4).fill(0)
         .map((_, i) => Math.max(...items.map(item => item[i].length)) + 1);
@@ -591,44 +741,6 @@ async function main() {
     }
     if (next)
         az_ls_blobs_logger.log(`nextMaker=${next}`);
-}
-function resolveListFilesXML(xml) {
-    let blobs = [];
-    let startPos = 0;
-    while (startPos >= 0) {
-        let result = matchBetween(xml, '<Blob>', '</Blob>', startPos);
-        if (!result)
-            break;
-        startPos = result.next;
-        let blob = { name: '', size: 0, mtime: null, md5: '', xml: '' };
-        const blobXML = result.matched;
-        blob.xml = blobXML;
-        result = matchBetween(blobXML, '<Name>', '</Name>', 0);
-        if (result)
-            blob.name = result.matched;
-        result = matchBetween(blobXML, '<Content-Length>', '</Content-Length>', 0);
-        if (result)
-            blob.size = parseInt(result.matched, 10);
-        result = matchBetween(blobXML, '<Last-Modified>', '</Last-Modified>', 0);
-        if (result)
-            blob.mtime = new Date(result.matched);
-        result = matchBetween(blobXML, '<Content-MD5>', '</Content-MD5>', 0);
-        if (result)
-            blob.md5 = Buffer.from(result.matched, 'base64').toString('hex');
-        blobs.push(blob);
-    }
-    const result = matchBetween(xml, '<NextMarker>', '</NextMarker>');
-    return { blobs, next: result === null || result === void 0 ? void 0 : result.matched };
-}
-function matchBetween(str, left, right, startPos = 0) {
-    let i = str.indexOf(left, startPos);
-    if (i < 0)
-        return;
-    i += left.length;
-    const j = str.indexOf(right, i);
-    if (j < 0)
-        return;
-    return { matched: str.slice(i, j), next: j + right.length };
 }
 
 /******/ })()

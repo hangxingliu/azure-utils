@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-global.__version='1.0.0';
+global.__version='1.1.0';
 
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
@@ -203,7 +203,7 @@ function createSharedKeyLite(args) {
     if (container)
         canonicalizedResource += container.replace(/^\/*/, '/');
     if (resourceUri)
-        canonicalizedResource += resourceUri.replace(/^\/*/, '/');
+        canonicalizedResource += encodeURI(resourceUri).replace(/^\/*/, '/');
     if (args.qs) {
         const pickKeys = new Set(['comp']);
         const qs = [];
@@ -264,10 +264,11 @@ function azDelBlob(args) {
         let statusCode = -1;
         let contentType = '';
         let data = '';
-        logger.log(`request delete api uri="${accountName}/${container}/${blob}" ...`);
+        const apiPath = `/${container}/${encodeURI(blob)}`;
+        logger.log(`request delete api uri="${apiPath}" ...`);
         const req = (0,external_https_namespaceObject.request)({
             host: getAzureBlobHost(connect),
-            path: `/${container}/${blob}`,
+            path: apiPath,
             method,
             headers: {
                 Authorization: authorization,
