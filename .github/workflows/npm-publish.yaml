@@ -1,0 +1,39 @@
+name: npm-publish
+
+# https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads
+# https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+
+jobs:
+
+  check-repo:
+    runs-on: ubuntu-latest
+    name: 'Check is this action in particular repo'
+    if: ${{ github.event.repository.name == 'azure-utils' }}
+    steps:
+      - name: 'Print action info'
+        run: echo "event=${{ github.event_name }} event_ref=${{ github.event.ref }} repo=${{ github.event.repository.full_name }} sender=${{ github.event.sender.login }}"
+
+  build:
+    name: Publish npm package
+    needs: check-repo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+      - name: 'Print latest 5 git logs'
+        run: git log --branches --all --decorate --oneline -n 5
+      - name: 'Install and Build'
+        run: npm install && npm run build
+      - name: 'Test'
+        run: npm run test
+      - uses: JS-DevTools/npm-publish@v1
+        with:
+          access: "public"
+          token: ${{ secrets.NPM_TOKEN }}
