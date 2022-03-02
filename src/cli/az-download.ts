@@ -100,6 +100,9 @@ async function main() {
       default: resolvePositionalArgs();
     }
   }
+  const isToStdout = local === '-';
+  if (isToStdout) logger.setLogDest('stderr');
+
   if (!remote) return usage();
   if (!local) local = '.';
 
@@ -134,29 +137,35 @@ async function main() {
   }
   if (!blob) blob = remote.replace(/^\//, '');
 
-  let localAsDir = false;
-  try {
-    const stat = fs.statSync(local);
-    if (stat.isDirectory())
-      localAsDir = true;
-  } catch (error) { }
-
   let targetFile: string;
-  if (localAsDir) {
-    targetFile = path.join(local, path.basename(blob));
-  } else {
-    targetFile = local;
-  }
-  logger.log(`local=${targetFile}`);
 
+  if (isToStdout) {
+    logger.log(`local=<stdout>`);
+  } else if (!onlyURL) {
+    let localAsDir = false;
+    try {
+      const stat = fs.statSync(local);
+      if (stat.isDirectory())
+        localAsDir = true;
+    } catch (error) { }
+
+    if (localAsDir) {
+      targetFile = path.join(local, path.basename(blob));
+    } else {
+      targetFile = local;
+    }
+    logger.log(`local=${targetFile}`);
+  }
 
   const result = createSASForBlob({ connect, blob });
   if (onlyURL)
     return console.log(result.url);
 
   const startedAt = Date.now();
-  const localFileName = path.basename(targetFile);
-  const stream = fs.createWriteStream(targetFile);
+  const localFileName = isToStdout ? 'stdout' : `"${path.basename(targetFile)}"`;
+  const stream = isToStdout
+    ? process.stdout
+    : fs.createWriteStream(targetFile);
   const { contentMD5 } = await downlaodToStream({
     url: result.url,
     stream,
@@ -172,12 +181,12 @@ async function main() {
       }
     }
   });
-  stream.close();
+  if (!isToStdout) (stream as fs.WriteStream).close();
 
   const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-  logger.log(`downloaded to "${localFileName}" +${elapsed}s`);
+  logger.log(`downloaded to ${localFileName} +${elapsed}s`);
 
-  if (contentMD5) {
+  if (!isToStdout && contentMD5) {
     const localMD5 = await getFileMD5Base64(targetFile);
     if (contentMD5 !== localMD5)
       throw new Error(`md5sums are different between local and remote, local md5sum is "${localMD5}"`);
