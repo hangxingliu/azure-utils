@@ -1,4 +1,9 @@
+*.cache
+*.tsbuildinfo
+.vscode
+
 /dist/tsc
+/dist/cjs
 /dist/*.sh
 
 ._*

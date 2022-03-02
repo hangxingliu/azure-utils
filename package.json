@@ -1,23 +1,28 @@
 {
   "name": "@hangxingliu/azure-utils",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "1.1.0",
+  "main": "dist/cjs/index.js",
+  "types": "dist/cjs/index.d.ts",
   "license": "MIT",
   "description": "standalone Node.js utils for Azure",
   "scripts": {
     "test": "tsc && rimraf dist/tsc",
     "start": "webpack --watch",
     "clean": "rimraf dist",
-    "build": "env NODE_ENV=producation webpack && chmod +x ./dist/*.js && ./scripts/create-cli.sh"
+    "rollup": "rollup -c",
+    "build": "env NODE_ENV=producation webpack && chmod +x ./dist/*.js && ./scripts/create-cli.sh && rollup -c"
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^8.3.1",
     "@types/node": "^16.11.6",
-    "@types/webpack": "^5.28.0",
-    "prettier": "^2.4.1",
-    "rimraf": "^3.0.2",
-    "ts-loader": "^9.2.6",
-    "typescript": "^4.4.4",
-    "webpack": "^5.61.0",
-    "webpack-cli": "^4.9.1"
+    "@types/webpack": "^5",
+    "prettier": "^2",
+    "rimraf": "^3",
+    "rollup": "^2",
+    "ts-loader": "^9",
+    "tslib": "^2.3.1",
+    "typescript": "^4",
+    "webpack": "^5",
+    "webpack-cli": "^4.9.2"
   }
 }
