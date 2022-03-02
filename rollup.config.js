@@ -8,6 +8,6 @@ export default {
     format: "cjs",
     sourcemap: false,
   },
-  external: ["fs", "crypto"],
+  external: ["fs", "crypto", "https", "path"],
   plugins: [typescript({ tsconfig: resolvePath(__dirname, "tsconfig.rollup.json") })],
 }
