@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "incremental": true,
-    "target": "es2017",
-    "outDir": "./dist/tsc",
+    "target": "ES2019",
+    "module": "ESNext",
+    "outDir": "dist/cjs",
+    "sourceMap": false,
+    "declaration": true,
     "skipLibCheck": true,
     "removeComments": false,
-    "declaration": false,
-    "sourceMap": true
   },
   "include": [
     "src"
   ],
   "exclude": [
-    "node_modules/**"
+    "dist",
+    "node_modules"
   ]
 }
