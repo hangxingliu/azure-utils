@@ -16,8 +16,8 @@ export type LocalFileBlock = {
   endPos: number;
 };
 
-export function getBlocksFormLocalFile(file: string): LocalFileBlock[] {
-  const stat = fs.statSync(file);
+export function getBlocksFormLocalFile(file: string, stat?: fs.Stats): LocalFileBlock[] {
+  if (!stat) stat = fs.statSync(file);
   const fileSize = stat.size;
 
   let startPos = 0;

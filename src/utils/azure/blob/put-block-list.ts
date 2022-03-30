@@ -1,6 +1,4 @@
-
 import { request } from "https";
-
 import { createSharedKeyLite } from "../shared-key-lite";
 import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types";
 
@@ -11,6 +9,11 @@ export type PutBlobListArgs = {
   blockUUIDs: string[];
   blob: string;
   logger: ILogger,
+  /**
+   * `application/octet-stream` by default.
+   * @see https://docs.microsoft.com/en-us/rest/api/storageservices/put-block-list
+   */
+  contentType?: string;
 }
 export type PutBlockListResult = {
   'content-length': string;
@@ -32,14 +35,19 @@ export function azPutBlockList(args: PutBlobListArgs): Promise<PutBlockListResul
   const date = new Date();
   const blob = args.blob.replace(/^\//, '');
 
+  let contentType = '';
+  if (typeof args.contentType === 'string')
+    contentType = args.contentType;
+
   const authorization = createSharedKeyLite({
     verb: method,
     connect,
     resourceUri: args.blob + `?comp=blocklist`,
     canonicalizedHeaders: [
+      contentType ? `x-ms-blob-content-type:${contentType}` : '',
       `x-ms-date:${date.toUTCString()}`,
       `x-ms-version:${x_ms_version}`,
-    ].join('\n'),
+    ].filter(it => it).join('\n'),
   })
   const postBody = `<?xml version="1.0" encoding="utf-8"?><BlockList>\n` +
     args.blockUUIDs.map(it => `<Latest>${it}</Latest>`).join('\n') +
@@ -47,30 +55,34 @@ export function azPutBlockList(args: PutBlobListArgs): Promise<PutBlockListResul
 
   return new Promise((resolve, reject) => {
     let statusCode = -1;
-    let contentType = '';
+    let resContentType = '';
     let data = '';
 
+    const headers: any = {
+      Authorization: authorization,
+      'Content-Length': postBody.length,
+      'x-ms-version': x_ms_version,
+      'x-ms-date': date.toUTCString(),
+    };
+    if (contentType)
+      headers['x-ms-blob-content-type'] = contentType;
+
     const apiPath = `/${container}/${encodeURI(blob)}?comp=blocklist`;
-    logger.log(`request put block list api uri="${apiPath}" ...`)
+    logger.log(`request put block list api uri="${apiPath}" x-ms-blob-content-type="${contentType}" ...`)
     const req = request({
       host: getAzureBlobHost(connect),
       path: apiPath,
       method,
-      headers: {
-        Authorization: authorization,
-        'Content-Length': postBody.length,
-        'x-ms-version': x_ms_version,
-        'x-ms-date': date.toUTCString(),
-      }
+      headers,
     }, res => {
       statusCode = res.statusCode;
-      contentType = res.headers["content-type"];
+      resContentType = res.headers["content-type"];
 
       res.on('data', (chunk: Buffer) => data += chunk.toString())
       res.on('end', () => {
         if (statusCode !== 201)
           return rejectWithLog(`HTTP status code is ${statusCode} but not 201`, data);
-        logger.verbose(`api response code=${statusCode} content-type=${contentType || ''}`);
+        logger.verbose(`api response code=${statusCode} content-type=${resContentType || ''}`);
         resolve(res.headers as any);
       })
     })

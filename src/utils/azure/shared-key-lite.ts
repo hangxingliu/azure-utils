@@ -7,7 +7,7 @@ export type SharedKeyLiteArgs = {
   resourceUri: string
   qs?: any
   headerDate?: Date
-  contenType?: string
+  contentType?: string
   canonicalizedHeaders?: string
 }
 export function createSharedKeyLite(args: SharedKeyLiteArgs) {
@@ -35,7 +35,7 @@ export function createSharedKeyLite(args: SharedKeyLiteArgs) {
   const stringToSign = [
     args.verb,
     '', // Content-MD5
-    args.contenType || '',
+    args.contentType || '',
     args.headerDate?.toUTCString() || '',
     args.canonicalizedHeaders || '',
     canonicalizedResource,

@@ -14,6 +14,7 @@ import { loadEnvFiles } from "../utils/env";
 import { Logger } from "../utils/logger";
 import { networkRetry as _networkRetry } from '../utils/network-retry'
 import { fileStat, getHumanReadableFileSize } from "../utils/file";
+import { getContentTypeByExt } from "../utils/azure/content-type";
 
 const logger = new Logger(`AzUpload`);
 main().catch(logger.fatal);
@@ -118,6 +119,8 @@ async function main() {
   const localFileStat = fileStat(localFile);
   const localFileName = path.basename(localFile);
   const localFileSize = localFileStat.size;
+  const extName = path.extname(localFileName);
+  const contentType = getContentTypeByExt(extName);
 
   const now = new Date();
   const resolvedBlob: string[] = [];
@@ -127,6 +130,7 @@ async function main() {
 
   logger.log(`localFile=${JSON.stringify(localFileName)}`);
   logger.log(`size=${localFileSize} "${getHumanReadableFileSize(localFileSize)}"`);
+  logger.log(`content-type=${localFileSize} "${getHumanReadableFileSize(localFileSize)}"`);
   for (let i = 0; i < resolvedBlob.length; i++) {
     const remoteFile = resolvedBlob[i];
     logger.log(`remoteFile[${i}]=${JSON.stringify(`${connect.accountName}/${connect.container}/${remoteFile}`)}`);
@@ -142,7 +146,7 @@ async function main() {
   if (blocks.length <= 1) {
     logger.log(`uploadMode="put 1 blob"`);
     const uploadResult = await networkRetry(() =>
-      azPutBlob({ logger, connect, blob: firstBlob, file: localFile }), 5);
+      azPutBlob({ logger, connect, blob: firstBlob, file: localFile, contentType }), 5);
 
     if (uploadResult?.["content-md5"]) {
       const remoteMD5 = uploadResult["content-md5"]
@@ -163,7 +167,8 @@ async function main() {
     }
 
     const blockUUIDs = blocks.map(it => it.uuid)
-    await networkRetry(() => azPutBlockList({ logger, connect, blob: firstBlob, blockUUIDs }), 3);
+    await networkRetry(() =>
+      azPutBlockList({ logger, connect, blob: firstBlob, blockUUIDs, contentType }), 3);
   }
 
   for (let i = 1; i < resolvedBlob.length; i++) {
