@@ -17,6 +17,7 @@ export * from "./utils/azure/crypto";
 export * from "./utils/azure/env";
 export * from "./utils/azure/result-parser";
 export * from "./utils/azure/shared-key-lite";
+export { getContentTypeByExt } from "./utils/azure/content-type";
 export {
   AzureConnectInfo,
   getAzureBlobHost,
