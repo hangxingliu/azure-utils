@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-global.__version='1.1.1';
+global.__version='1.2.0';
 function __swcpack_require__(mod) {
     function interop(obj) {
         if (obj && obj.__esModule) {
@@ -201,7 +201,7 @@ var load3 = __swcpack_require__.bind(void 0, function(module, exports) {
         const stringToSign = [
             args.verb,
             '',
-            args.contenType || '',
+            args.contentType || '',
             args.headerDate?.toUTCString() || '',
             args.canonicalizedHeaders || '',
             canonicalizedResource, 

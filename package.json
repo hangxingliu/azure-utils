@@ -1,15 +1,17 @@
 {
   "name": "@hangxingliu/azure-utils",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "main": "dist/cjs/index.js",
   "types": "dist/cjs/index.d.ts",
   "license": "MIT",
   "description": "standalone Node.js utils for Azure",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "tsc && rimraf dist/tsc",
+    "test": "tsc",
     "clean": "rimraf dist",
-    "build": "spack --target node && ./scripts/create-cli.js && tsc --emitDeclarationOnly",
-    "build:types": "tsc --emitDeclarationOnly"
+    "build": "spack --target node && ./scripts/create-cli.js && tsc"
   },
   "devDependencies": {
     "@swc/cli": "^0.1.56",

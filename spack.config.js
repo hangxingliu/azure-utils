@@ -4,7 +4,7 @@ const { config } = require("@swc/core/spack");
 const src = __dirname + `/src/cli`;
 const scripts = fs.readdirSync(src).filter((it) => it.endsWith(".ts") && it.indexOf("helper.") < 0);
 const entry = {
-  "cjs/index": __dirname + "/src/index.ts",
+  // "cjs/index": __dirname + "/src/index.ts",
 };
 scripts.forEach((it) => {
   const targetName = it.replace(/\.(\w+)$/, "");
