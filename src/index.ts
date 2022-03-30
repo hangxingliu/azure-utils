@@ -17,5 +17,10 @@ export * from "./utils/azure/crypto";
 export * from "./utils/azure/env";
 export * from "./utils/azure/result-parser";
 export * from "./utils/azure/shared-key-lite";
-export { AzureConnectInfo, getAzureBlobHost, getAzureProtocol } from "./utils/azure/types";
+export {
+  AzureConnectInfo,
+  getAzureBlobHost,
+  getAzureProtocol,
+  getAzureBlobURL,
+} from "./utils/azure/types";
 export { decodeXml } from "./utils/azure/xml-entities";

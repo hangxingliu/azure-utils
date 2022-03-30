@@ -6,7 +6,7 @@ import { envVarUsage } from "./helper";
 
 import { AzureStorageEnv } from "../utils/azure/env";
 import { createSASForBlob } from "../utils/azure/blob/blob-sas";
-import { getAzureBlobHost, getAzureProtocol } from "../utils/azure/types";
+import { getAzureBlobHost, getAzureBlobURL, getAzureProtocol } from "../utils/azure/types";
 import { getFileMD5Base64 } from "../utils/azure/crypto";
 
 import { loadEnvFiles } from "../utils/env";
@@ -27,9 +27,10 @@ function usage() {
     '  Options:',
     '',
     '    --env       <envFile>        [multiple] load env variables from files if they are existed',
-    '    --url                        do not download the file but get the signed url for the resource',
+    '    --url                        do not download the file but get the url for the resource',
     '    --container <containerName>  provide container name (this argument has a higher priority than environment variable)',
     '    --verbose                    print verbose logs',
+    '    --public                     do not sign the url(add SAS) before downloading or printing',
     '',
     ...envVarUsage,
     '  Example:',
@@ -54,6 +55,7 @@ async function main() {
   let remote: string;
   let verbose = false;
   let onlyURL = false;
+  let signURL = true;
   let overwriteContainer: string;
   const envFiles: string[] = [];
 
@@ -96,6 +98,9 @@ async function main() {
       case '--verbose':
         verbose = true;
         logger.setVerbose(true);
+        break;
+      case '--public':
+        signURL = false;
         break;
       default: resolvePositionalArgs();
     }
@@ -157,9 +162,16 @@ async function main() {
     logger.log(`local=${targetFile}`);
   }
 
-  const result = createSASForBlob({ connect, blob });
+  let finalURL: string;
+  if (signURL) {
+    const result = createSASForBlob({ connect, blob });
+    finalURL = result.url;
+  } else {
+    finalURL = getAzureBlobURL(connect, blob);
+  }
+
   if (onlyURL)
-    return console.log(result.url);
+    return console.log(finalURL);
 
   const startedAt = Date.now();
   const localFileName = isToStdout ? 'stdout' : `"${path.basename(targetFile)}"`;
@@ -167,7 +179,7 @@ async function main() {
     ? process.stdout
     : fs.createWriteStream(targetFile);
   const { contentMD5 } = await downlaodToStream({
-    url: result.url,
+    url: finalURL,
     stream,
     progressInterval: verbose ? 2000 : 5000,
     logger: {
