@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-global.__version='1.1.0';
+global.__version='1.1.1';
 function __swcpack_require__(mod) {
     function interop(obj) {
         if (obj && obj.__esModule) {
@@ -176,6 +176,7 @@ var load3 = __swcpack_require__.bind(void 0, function(module, exports) {
     });
     exports.getAzureBlobHost = getAzureBlobHost;
     exports.getAzureProtocol = getAzureProtocol;
+    exports.getAzureBlobURL = getAzureBlobURL;
     function getAzureBlobHost(connect) {
         return `${connect.accountName}.blob.${connect.endpointSuffix}`;
     }
@@ -184,6 +185,12 @@ var load3 = __swcpack_require__.bind(void 0, function(module, exports) {
         const index = protocol.indexOf(':');
         if (index >= 0) protocol = protocol.slice(0, index);
         return protocol;
+    }
+    function getAzureBlobURL(connect, blob) {
+        const protocol = getAzureProtocol(connect);
+        const host = getAzureBlobHost(connect);
+        blob = blob.replace(/^\/+/, '');
+        return `${protocol}://${host}/${connect.container}/${blob}`;
     }
 });
 var load4 = __swcpack_require__.bind(void 0, function(module, exports) {
@@ -473,9 +480,10 @@ function usage() {
         '  Options:',
         '',
         '    --env       <envFile>        [multiple] load env variables from files if they are existed',
-        '    --url                        do not download the file but get the signed url for the resource',
+        '    --url                        do not download the file but get the url for the resource',
         '    --container <containerName>  provide container name (this argument has a higher priority than environment variable)',
         '    --verbose                    print verbose logs',
+        '    --public                     do not sign the url(add SAS) before downloading or printing',
         '',
         ..._helper.envVarUsage,
         '  Example:',
@@ -498,6 +506,7 @@ async function main() {
     let remote;
     let verbose = false;
     let onlyURL = false;
+    let signURL = true;
     let overwriteContainer;
     const envFiles = [];
     let afterDoubleDash = false;
@@ -540,6 +549,9 @@ async function main() {
             case '--verbose':
                 verbose = true;
                 logger.setVerbose(true);
+                break;
+            case '--public':
+                signURL = false;
                 break;
             default:
                 resolvePositionalArgs();
@@ -587,16 +599,20 @@ async function main() {
         else targetFile = local;
         logger.log(`local=${targetFile}`);
     }
-    const result = (0, _blobSas).createSASForBlob({
-        connect,
-        blob
-    });
-    if (onlyURL) return console.log(result.url);
+    let finalURL;
+    if (signURL) {
+        const result = (0, _blobSas).createSASForBlob({
+            connect,
+            blob
+        });
+        finalURL = result.url;
+    } else finalURL = (0, _types).getAzureBlobURL(connect, blob);
+    if (onlyURL) return console.log(finalURL);
     const startedAt = Date.now();
     const localFileName = isToStdout ? 'stdout' : `"${path.basename(targetFile)}"`;
     const stream = isToStdout ? process.stdout : fs.createWriteStream(targetFile);
     const { contentMD5  } = await (0, _download).downlaodToStream({
-        url: result.url,
+        url: finalURL,
         stream,
         progressInterval: verbose ? 2000 : 5000,
         logger: {

@@ -5,6 +5,7 @@
 /dist/tsc
 /dist/cjs
 /dist/*.sh
+/dist/*.map
 
 ._*
 

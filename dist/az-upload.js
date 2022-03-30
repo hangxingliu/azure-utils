@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-global.__version='1.1.0';
+global.__version='1.1.1';
 function __swcpack_require__(mod) {
     function interop(obj) {
         if (obj && obj.__esModule) {
@@ -156,6 +156,7 @@ var load3 = __swcpack_require__.bind(void 0, function(module, exports) {
     });
     exports.getAzureBlobHost = getAzureBlobHost;
     exports.getAzureProtocol = getAzureProtocol;
+    exports.getAzureBlobURL = getAzureBlobURL;
     function getAzureBlobHost(connect) {
         return `${connect.accountName}.blob.${connect.endpointSuffix}`;
     }
@@ -164,6 +165,12 @@ var load3 = __swcpack_require__.bind(void 0, function(module, exports) {
         const index = protocol.indexOf(':');
         if (index >= 0) protocol = protocol.slice(0, index);
         return protocol;
+    }
+    function getAzureBlobURL(connect, blob) {
+        const protocol = getAzureProtocol(connect);
+        const host = getAzureBlobHost(connect);
+        blob = blob.replace(/^\/+/, '');
+        return `${protocol}://${host}/${connect.container}/${blob}`;
     }
 });
 var load4 = __swcpack_require__.bind(void 0, function(module, exports) {
