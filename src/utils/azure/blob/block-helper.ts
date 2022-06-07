@@ -41,3 +41,23 @@ export function getBlocksFormLocalFile(file: string, stat?: fs.Stats): LocalFile
   }
   return result;
 }
+
+export type LocalFileBlockListCache = {
+  file: string;
+  fileSize: number;
+  mtime: number;
+  list: {
+    uploaded?: boolean;
+    uuid: string;
+    startPos: number;
+    endPos: number;
+  }[];
+};
+
+export class FileBlockListManager {
+  constructor(private readonly file: string) { }
+
+  getList = (cache?: LocalFileBlockListCache) => {
+
+  }
+}

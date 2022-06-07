@@ -4,6 +4,7 @@
 
 /dist/tsc
 /dist/cjs
+/dist/esm
 /dist/*.sh
 /dist/*.map
 

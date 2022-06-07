@@ -2,6 +2,7 @@
   "name": "@hangxingliu/azure-utils",
   "version": "1.2.0",
   "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "types": "dist/cjs/index.d.ts",
   "license": "MIT",
   "description": "standalone Node.js utils for Azure",
