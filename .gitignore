@@ -4,6 +4,7 @@
 
 /dist/tsc
 /dist/cjs
+/dist/esm
 /dist/*.sh
 /dist/*.map
 
@@ -15,8 +16,7 @@
 
 # Environment variable files
 .env
-dev.env
-prod.env
+*.env
 
 # Logs
 logs
