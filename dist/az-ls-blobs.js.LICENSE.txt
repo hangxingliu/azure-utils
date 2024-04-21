@@ -1,0 +1,5 @@
+/**!
+ * @see https://github.com/mdevils/html-entities
+ * @license MIT
+ * @author mdevils "Marat Dulin"
+ */

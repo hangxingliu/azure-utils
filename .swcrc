@@ -1,5 +1,5 @@
 {
-  "sourceMaps": false,
+  "sourceMaps": true,
   "module": {
     "type": "commonjs",
     "noInterop": true
@@ -7,13 +7,12 @@
   "jsc": {
     "parser": {
       "syntax": "typescript",
-      "decorators": true,
-      "privateMethod": true
+      "decorators": true
     },
     "transform": {
       "decoratorMetadata": true
     },
-    "target": "es2020",
-    "preserveAllComments": true
+    "target": "es2022",
+    "preserveAllComments": false
   }
 }
