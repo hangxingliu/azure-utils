@@ -6,7 +6,8 @@ export function fileStat(file: string) {
   try {
     stat = fs.statSync(file);
   } catch (error) {
-    throw new Error(`Get stat of "${path.basename(file)}" failed: ${error.message}`);
+    const errMsg = error && error instanceof Error ? error.message : String(error);
+    throw new Error(`Get stat of "${path.basename(file)}" failed: ${errMsg}`);
   }
   if (!stat.isFile())
     throw new Error(`"${path.basename(file)}" is not a file!`);

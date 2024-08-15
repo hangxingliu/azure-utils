@@ -8,7 +8,6 @@ import { getAzureBlobHost, getAzureProtocol } from "../utils/azure/types.js";
 
 import { loadEnvFiles } from "../utils/env.js";
 import { Logger } from "../utils/logger.js";
-import { networkRetry as _networkRetry } from "../utils/network-retry.js";
 
 const logger = new Logger(`AzDelBlob`);
 main().catch(logger.fatal);
@@ -43,7 +42,7 @@ async function main() {
   const allArgv = process.argv.slice(2);
 
   let remoteFiles: string[] = [];
-  let overwriteContainer: string;
+  let overwriteContainer: string | undefined;
   const envFiles: string[] = [];
 
   let afterDoubleDash = false;
@@ -95,7 +94,7 @@ async function main() {
   for (let i = 0; i < remoteFiles.length; i++) {
     const remote = remoteFiles[i];
 
-    let blob: string;
+    let blob: string | undefined;
     let exactMatchedURL = true
     let remoteURL = safeParseURL(remote);
     const azureHost = getAzureBlobHost(connect);

@@ -20,7 +20,7 @@ export function createSharedKeyLite(args: SharedKeyLiteArgs) {
 
   if (args.qs) {
     const pickKeys = new Set(['comp']);
-    const qs = [];
+    const qs: Record<string, string> = {};
     Object.keys(args.qs).forEach(it => qs[it.toLowerCase()] = args.qs[it]);
     const keys = Object.keys(qs).sort();
     let isFirst = true

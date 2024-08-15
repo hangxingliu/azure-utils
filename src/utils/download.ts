@@ -23,12 +23,14 @@ export type DownloadArgs = {
 export function downlaodToStream(args: DownloadArgs): Promise<DownloadResponse> {
   return new Promise((resolve, reject) => {
     let statusCode = -1;
-    let contentType = '';
+    let contentType: string | undefined = '';
     let contentMD5 = '';
     let contentLength = -1;
     let promise = Promise.resolve();
 
-    const { stream, progressInterval, logger } = args;
+    const progressInterval = typeof args.progressInterval === "number" ? args.progressInterval : -1;
+    const { stream, logger } = args;
+
     let lastProgressLog = Date.now();
     let downloaded = 0;
     let responsedAt = 0;
@@ -38,7 +40,7 @@ export function downlaodToStream(args: DownloadArgs): Promise<DownloadResponse> 
 
     const req = https.get(args.url, {}, res => {
       responsedAt = Date.now();
-      statusCode = res.statusCode;
+      if (typeof res.statusCode === 'number') statusCode = res.statusCode;
       if (statusCode !== 200) {
         logger.log(`headers: ${JSON.stringify(res.headers)}`);
         return rejectWithLog(`Server response status code is ${statusCode} but not 200`);

@@ -5,7 +5,7 @@ const logger = new Logger('NetworkRetry');
 /**
  * @see https://github.com/sindresorhus/is-retry-allowed
  */
-const errors = new Set([
+const errors = new Set<string | number>([
   'ECONNRESET',
   'ECONNREFUSED',
   'ETIMEDOUT',
@@ -45,22 +45,40 @@ const errors = new Set([
   'HOSTNAME_MISMATCH'
 ]);
 
-export async function networkRetry<T>(fn: () => Promise<T>, retries = 3, waitSeconds = 15): Promise<T> {
+function isErrnoException(err: unknown): err is Required<NodeJS.ErrnoException> {
+  if (err && err instanceof Error) return "errno" in err || "code" in err;
+  return false;
+}
+
+function stringifyErrnoException(err: NodeJS.ErrnoException): string {
+  let errMsg = `network error `;
+  if (err.code) errMsg += err.code + " ";
+  if (typeof err.errno !== "undefined") errMsg += ` errno=${err.errno}`;
+  return errMsg;
+}
+
+export async function networkRetry<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  waitSeconds = 15
+): Promise<T> {
+  let lastError: unknown;
   for (let i = 0; i < retries; i++) {
     try {
       const result = await fn();
       return result;
     } catch (error) {
-      const sysError = error as any;
-      if (errors.has(sysError.errno) || errors.has(sysError.code)) {
-        if (i >= retries - 1)
-          throw error;
+      lastError = error;
+      if (isErrnoException(error) && (errors.has(error.errno) || errors.has(error.code))) {
+        if (i >= retries - 1) break;
 
-        logger.error(`network error ${sysError.errno}, waiting ${waitSeconds} seconds and retry ...`);
-        await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
-      } else {
-        throw error;
+        logger.error(
+          `${stringifyErrnoException(error)}, waiting ${waitSeconds} seconds and retry ...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
       }
+      throw error;
     }
   }
+  throw lastError;
 }

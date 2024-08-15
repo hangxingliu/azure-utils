@@ -8,7 +8,7 @@ let poolPtr = rnds8Pool.length;
  * Convert array of 16 byte values to UUID string format of the form:
  * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
  */
-const byteToHex = [];
+const byteToHex: string[] = [];
 for (let i = 0; i < 256; ++i) {
   byteToHex.push((i + 0x100).toString(16).substr(1));
 }
