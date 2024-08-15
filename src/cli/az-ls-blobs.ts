@@ -1,14 +1,14 @@
-import { AzureStorageEnv } from "../utils/azure/env";
+import { AzureStorageEnv } from "../utils/azure/env.js";
 
-import { envVarUsage } from "./helper";
+import { envVarUsage } from "./helper.js";
 
-import { azListBlobs } from "../utils/azure/blob/list-blob";
+import { azListBlobs } from "../utils/azure/blob/list-blob.js";
 
-import { loadEnvFiles } from "../utils/env";
-import { Logger } from "../utils/logger";
-import { networkRetry } from '../utils/network-retry'
-import { getHumanReadableFileSize } from "../utils/file";
-import { parseListBlobsResult } from "../utils/azure/result-parser";
+import { loadEnvFiles } from "../utils/env.js";
+import { Logger } from "../utils/logger.js";
+import { networkRetry } from "../utils/network-retry.js";
+import { getHumanReadableFileSize } from "../utils/file.js";
+import { parseListBlobsResult } from "../utils/azure/result-parser.js";
 
 const logger = new Logger(`AzListBlobs`);
 main().catch(logger.fatal);

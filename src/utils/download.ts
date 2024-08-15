@@ -1,6 +1,6 @@
-import * as https from "https";
-import { Writable } from "stream";
-import { getHumanReadableFileSize } from "./file";
+import * as https from "node:https";
+import { Writable } from "node:stream";
+import { getHumanReadableFileSize } from "./file.js";
 
 export type DownloadResponse = {
   contentLength?: number;

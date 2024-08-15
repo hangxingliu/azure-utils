@@ -1,14 +1,14 @@
-import { URL } from "url";
+import { URL } from "node:url";
 
-import { envVarUsage } from "./helper";
+import { envVarUsage } from "./helper.js";
 
-import { AzureStorageEnv } from "../utils/azure/env";
-import { azDelBlob } from "../utils/azure/blob/del-blob";
-import { getAzureBlobHost, getAzureProtocol } from "../utils/azure/types";
+import { AzureStorageEnv } from "../utils/azure/env.js";
+import { azDelBlob } from "../utils/azure/blob/del-blob.js";
+import { getAzureBlobHost, getAzureProtocol } from "../utils/azure/types.js";
 
-import { loadEnvFiles } from "../utils/env";
-import { Logger } from "../utils/logger";
-import { networkRetry as _networkRetry } from '../utils/network-retry'
+import { loadEnvFiles } from "../utils/env.js";
+import { Logger } from "../utils/logger.js";
+import { networkRetry as _networkRetry } from "../utils/network-retry.js";
 
 const logger = new Logger(`AzDelBlob`);
 main().catch(logger.fatal);

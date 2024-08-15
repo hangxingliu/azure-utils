@@ -1,5 +1,5 @@
-import { hmacSHA256 } from "./crypto";
-import { AzureConnectInfo } from "./types";
+import { hmacSHA256 } from "./crypto.js";
+import { AzureConnectInfo } from "./types.js";
 
 export type SharedKeyLiteArgs = {
   verb: string;

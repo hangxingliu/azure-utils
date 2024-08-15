@@ -1,9 +1,9 @@
-import * as fs from "fs";
-import * as path from "path";
-import { request } from "https";
-import { getContentTypeByExt } from "../content-type";
-import { createSharedKeyLite } from "../shared-key-lite";
-import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { request } from "node:https";
+import { getContentTypeByExt } from "../content-type.js";
+import { createSharedKeyLite } from "../shared-key-lite.js";
+import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types.js";
 
 const x_ms_version = '2020-10-02';
 

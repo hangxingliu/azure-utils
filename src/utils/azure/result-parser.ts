@@ -1,4 +1,4 @@
-import { decodeXml } from "./xml-entities";
+import { decodeXml } from "./xml-entities.js";
 
 export type BlobItemInListResult = {
   name: string;

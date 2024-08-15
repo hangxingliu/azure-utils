@@ -1,5 +1,5 @@
-import { hmacSHA256 } from "../crypto";
-import { AzureConnectInfo, getAzureBlobHost, getAzureProtocol } from "../types";
+import { hmacSHA256 } from "../crypto.js";
+import { AzureConnectInfo, getAzureBlobHost, getAzureProtocol } from "../types.js";
 
 const signedVersion = "2020-10-02"
 

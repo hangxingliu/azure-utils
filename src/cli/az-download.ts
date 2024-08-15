@@ -1,19 +1,19 @@
-import { URL } from "url";
-import * as fs from "fs";
-import * as path from "path";
+import { URL } from "node:url";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
-import { envVarUsage } from "./helper";
+import { envVarUsage } from "./helper.js";
 
-import { AzureStorageEnv } from "../utils/azure/env";
-import { createSASForBlob } from "../utils/azure/blob/blob-sas";
-import { getAzureBlobHost, getAzureBlobURL, getAzureProtocol } from "../utils/azure/types";
-import { getFileMD5Base64 } from "../utils/azure/crypto";
+import { AzureStorageEnv } from "../utils/azure/env.js";
+import { createSASForBlob } from "../utils/azure/blob/blob-sas.js";
+import { getAzureBlobHost, getAzureBlobURL, getAzureProtocol } from "../utils/azure/types.js";
+import { getFileMD5Base64 } from "../utils/azure/crypto.js";
 
-import { loadEnvFiles } from "../utils/env";
-import { Logger } from "../utils/logger";
-import { networkRetry as _networkRetry } from '../utils/network-retry'
-import { getHumanReadableFileSize } from "../utils/file";
-import { downlaodToStream } from "../utils/download";
+import { loadEnvFiles } from "../utils/env.js";
+import { Logger } from "../utils/logger.js";
+import { networkRetry as _networkRetry } from "../utils/network-retry.js";
+import { getHumanReadableFileSize } from "../utils/file.js";
+import { downlaodToStream } from "../utils/download.js";
 
 const logger = new Logger(`AzDownload`);
 main().catch(logger.fatal);

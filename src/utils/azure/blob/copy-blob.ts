@@ -1,7 +1,7 @@
-import { request } from "https";
+import { request } from "node:https";
 
-import { createSharedKeyLite } from "../shared-key-lite";
-import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types";
+import { createSharedKeyLite } from "../shared-key-lite.js";
+import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types.js";
 
 const x_ms_version = '2020-10-02'
 

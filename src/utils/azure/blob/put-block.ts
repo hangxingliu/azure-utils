@@ -1,9 +1,9 @@
-import * as fs from "fs";
-import { request } from "https";
+import * as fs from "node:fs";
+import { request } from "node:https";
 
-import { createSharedKeyLite } from "../shared-key-lite";
-import { LocalFileBlock } from "./block-helper";
-import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types";
+import { createSharedKeyLite } from "../shared-key-lite.js";
+import { LocalFileBlock } from "./block-helper.js";
+import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types.js";
 
 const x_ms_version = '2020-10-02'
 

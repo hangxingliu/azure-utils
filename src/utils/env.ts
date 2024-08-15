@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import * as fs from "node:fs";
 
 export function loadEnvFiles(files: string[]) {
   for (let i = 0; i < files.length; i++) {

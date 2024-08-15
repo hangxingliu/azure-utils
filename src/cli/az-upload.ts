@@ -1,20 +1,20 @@
-import * as path from "path";
+import * as path from "node:path";
 
-import { envVarUsage } from "./helper";
+import { envVarUsage } from "./helper.js";
 
-import { azPutBlob } from "../utils/azure/blob/put-blob";
-import { azCopyBlob } from "../utils/azure/blob/copy-blob";
-import { azPutBlockList } from "../utils/azure/blob/put-block-list";
-import { azPutBlock } from "../utils/azure/blob/put-block";
-import { getBlocksFormLocalFile } from "../utils/azure/blob/block-helper";
-import { AzureStorageEnv } from "../utils/azure/env";
-import { getFileMD5Base64, uuidv4 } from "../utils/azure/crypto";
+import { azPutBlob } from "../utils/azure/blob/put-blob.js";
+import { azCopyBlob } from "../utils/azure/blob/copy-blob.js";
+import { azPutBlockList } from "../utils/azure/blob/put-block-list.js";
+import { azPutBlock } from "../utils/azure/blob/put-block.js";
+import { getBlocksFormLocalFile } from "../utils/azure/blob/block-helper.js";
+import { AzureStorageEnv } from "../utils/azure/env.js";
+import { getFileMD5Base64, uuidv4 } from "../utils/azure/crypto.js";
 
-import { loadEnvFiles } from "../utils/env";
-import { Logger } from "../utils/logger";
-import { networkRetry as _networkRetry } from '../utils/network-retry'
-import { fileStat, getHumanReadableFileSize } from "../utils/file";
-import { getContentTypeByExt } from "../utils/azure/content-type";
+import { loadEnvFiles } from "../utils/env.js";
+import { Logger } from "../utils/logger.js";
+import { networkRetry as _networkRetry } from "../utils/network-retry.js";
+import { fileStat, getHumanReadableFileSize } from "../utils/file.js";
+import { getContentTypeByExt } from "../utils/azure/content-type.js";
 
 const logger = new Logger(`AzUpload`);
 main().catch(logger.fatal);

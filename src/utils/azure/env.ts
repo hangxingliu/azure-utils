@@ -1,4 +1,4 @@
-import { AzureConnectInfo } from "./types";
+import { AzureConnectInfo } from "./types.js";
 
 /**
  * - AZURE_STORAGE_KEY                 Eg: `jPJyz...dA==`

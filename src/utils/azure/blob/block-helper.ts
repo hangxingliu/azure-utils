@@ -1,6 +1,6 @@
-import * as fs from "fs";
+import * as fs from "node:fs";
 
-import { uuidv4Base64 } from "../crypto";
+import { uuidv4Base64 } from "../crypto.js";
 
 export const azBlockSize = 1024 * 1024 * 60; // 62MiB
 export const azBlockSizeSmall = 1024 * 1024 * 2; // 2MiB
