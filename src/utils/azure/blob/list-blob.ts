@@ -3,7 +3,7 @@ import { request } from "https";
 import { createSharedKeyLite } from "../shared-key-lite";
 import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types";
 
-const x_ms_version = '2020-10-02'
+const x_ms_version = '2021-06-08'
 
 export type ListBlobsArgs = {
   connect: AzureConnectInfo,

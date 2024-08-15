@@ -27,6 +27,7 @@ function usage() {
     '  Options:',
     '',
     '    --env       <envFile>        [multiple] load env variables from files if they are existed',
+    '    --exp       <expiration>     expiration minutes or a positive number with the support units: m, h, d, min, hour, day, minutes, hours, days',
     '    --url                        do not download the file but get the url for the resource',
     '    --container <containerName>  provide container name (this argument has a higher priority than environment variable)',
     '    --verbose                    print verbose logs',
@@ -53,6 +54,7 @@ async function main() {
 
   let local: string;
   let remote: string;
+  let exp: string;
   let verbose = false;
   let onlyURL = false;
   let signURL = true;
@@ -89,6 +91,9 @@ async function main() {
         onlyURL = true;
         logger.setLogDest('stderr');
         break;
+      case '--exp':
+        exp = getNextArg();
+        break;
       case '--container':
         overwriteContainer = getNextArg();
         break;
@@ -110,6 +115,13 @@ async function main() {
 
   if (!remote) return usage();
   if (!local) local = '.';
+
+  let expiryMinutes: number | undefined;
+  if (exp) {
+    expiryMinutes = parseExpiration(exp);
+    if (typeof expiryMinutes !== 'number')
+      throw new Error(`The given expiration "${exp}" is invalid`);
+  }
 
   loadEnvFiles(envFiles);
 
@@ -164,7 +176,7 @@ async function main() {
 
   let finalURL: string;
   if (signURL) {
-    const result = createSASForBlob({ connect, blob });
+    const result = createSASForBlob({ connect, blob, expiryMinutes });
     finalURL = result.url;
   } else {
     finalURL = getAzureBlobURL(connect, blob);
@@ -211,4 +223,18 @@ function safeParseURL(url: string) {
   } catch (error) {
     return null;
   }
+}
+
+/** @returns minutes */
+function parseExpiration(exp: string): number | undefined {
+  const mtx = (exp || '').match(/^(\d+(?:\.\d+)?)(m|h|d|min|hours?|days?|minutes)?$/);
+  if (!mtx) return;
+
+  const num = parseFloat(mtx[1]);
+  if (isNaN(num)) return;
+
+  const unit = mtx[2][0];
+  if (unit == 'd') return num * 24 * 60;
+  if (unit == 'h') return num * 60;
+  return num;
 }

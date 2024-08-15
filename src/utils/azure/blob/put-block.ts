@@ -28,6 +28,7 @@ export type PutBlockResult = {
 
 /**
  * @see https://docs.microsoft.com/en-us/rest/api/storageservices/put-block
+ * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-block-list?tabs=microsoft-entra-id
  */
 export function azPutBlock(args: PutBlockArgs): Promise<PutBlockResult> {
   const { connect, logger, block } = args;
