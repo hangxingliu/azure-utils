@@ -16,14 +16,15 @@
     "dev": "webpack dev"
   },
   "devDependencies": {
-    "@swc/core": "^1.4.16",
-    "@types/node": "^20.12.7",
-    "mime-db": "^1.52.0",
-    "prettier": "^3.2.5",
-    "rimraf": "^5.0.5",
+    "@swc/core": "^1.7.11",
+    "@types/node": "^22.3.0",
+    "mime-db": "^1.53.0",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1",
     "swc-loader": "^0.2.6",
-    "typescript": "^5.4.5",
-    "webpack": "^5.91.0",
+    "typescript": "^5.5.4",
+    "webpack": "^5.93.0",
     "webpack-cli": "^5.1.4"
-  }
+  },
+  "packageManager": "yarn@1.22.22"
 }
