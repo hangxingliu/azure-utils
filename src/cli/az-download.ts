@@ -7,7 +7,7 @@ import { envVarUsage } from "./helper.js";
 import { AzureStorageEnv } from "../utils/azure/env.js";
 import { createSASForBlob } from "../utils/azure/blob/blob-sas.js";
 import { getAzureBlobHost, getAzureBlobURL, getAzureProtocol } from "../utils/azure/types.js";
-import { getFileMD5Base64 } from "../utils/azure/crypto.js";
+import { getFileMD5Base64 } from "../utils/crypto.js";
 
 import { loadEnvFiles } from "../utils/env.js";
 import { Logger } from "../utils/logger.js";

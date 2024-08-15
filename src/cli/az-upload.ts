@@ -8,13 +8,13 @@ import { azPutBlockList } from "../utils/azure/blob/put-block-list.js";
 import { azPutBlock } from "../utils/azure/blob/put-block.js";
 import { getBlocksFormLocalFile } from "../utils/azure/blob/block-helper.js";
 import { AzureStorageEnv } from "../utils/azure/env.js";
-import { getFileMD5Base64, uuidv4 } from "../utils/azure/crypto.js";
+import { getFileMD5Base64, uuidv4 } from "../utils/crypto.js";
 
 import { loadEnvFiles } from "../utils/env.js";
 import { Logger } from "../utils/logger.js";
 import { networkRetry as _networkRetry } from "../utils/network-retry.js";
 import { fileStat, getHumanReadableFileSize } from "../utils/file.js";
-import { getContentTypeByExt } from "../utils/azure/content-type.js";
+import { getContentTypeByExt } from "../utils/content-type.js";
 
 const logger = new Logger(`AzUpload`);
 main().catch(logger.fatal);
