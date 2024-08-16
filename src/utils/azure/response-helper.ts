@@ -43,7 +43,9 @@ export class AzureResponseHelper {
     const logs = [`api response code=${this.status}`];
     if (this.contentType) logs.push(`content-type=${this.contentType}`);
     if (this.headers) {
-      const keys = Object.keys(this.headers).filter((key) => !ignoredRespHeaders.has(key));
+      const keys = Object.keys(this.headers).filter(
+        (key) => key.startsWith("x-ms-") && !ignoredRespHeaders.has(key)
+      );
       for (const key of keys) logs.push(`${key}=${this.headers[key]}`);
     }
 
