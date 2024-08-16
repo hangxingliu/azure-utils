@@ -16,7 +16,23 @@ export type LocalFileBlock = {
   endPos: number;
 };
 
-export function getBlocksFormLocalFile(file: string, stat?: fs.Stats): LocalFileBlock[] {
+export type GetLocalFileBlockOpts = {
+  stat?: fs.Stats;
+  blockSize?: number;
+}
+
+export function getBlocksFormLocalFile(file: string, opts?: GetLocalFileBlockOpts): LocalFileBlock[] {
+  let stat: Readonly<fs.Stats> | undefined;
+  let normalBlockSize = azBlockSize;
+  let customBlockSize = false;
+
+  if (opts) {
+    if (opts.stat) stat = opts.stat;
+    if (typeof opts.blockSize === 'number' && opts.blockSize >= 1) {
+      normalBlockSize = Math.floor(opts.blockSize);
+      customBlockSize = true;
+    }
+  }
   if (!stat) stat = fs.statSync(file);
   const fileSize = stat.size;
 
@@ -24,12 +40,13 @@ export function getBlocksFormLocalFile(file: string, stat?: fs.Stats): LocalFile
   let index = 0;
   const result: LocalFileBlock[] = [];
   while (startPos < fileSize) {
-    const endPos = Math.min(startPos + azBlockSize, fileSize);
+    const endPos = Math.min(startPos + normalBlockSize, fileSize);
     const uuid = uuidv4Base64()
     result.push({ uuid, file, fileSize, index, startPos, endPos });
     startPos = endPos;
     index++;
   }
+  if (customBlockSize) return result;
 
   // merge small block
   if (result.length >= 2) {
