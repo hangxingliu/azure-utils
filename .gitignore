@@ -2,6 +2,7 @@
 *.tsbuildinfo
 .vscode
 
+/*.xml
 /dist/tsc
 /dist/cjs
 /dist/esm

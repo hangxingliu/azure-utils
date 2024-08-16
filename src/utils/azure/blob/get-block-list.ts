@@ -6,56 +6,40 @@ import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types.js";
 import { AzureResponseHelper } from "../response-helper.js";
 import { getURI } from "../../uri.js";
 
-const x_ms_version = "2021-06-08";
+const x_ms_version = "2024-11-04";
 
-export type ListBlobsInlcudeArg =
-  | "snapshots"
-  | "metadata"
-  | "uncommittedblobs"
-  | "copy"
-  | "deleted"
-  | "tags"
-  | "versions"
-  | "deletedwithversions"
-  | "immutabilitypolicy"
-  | "legalhold"
-  | "permissions";
-
-export type ListBlobsArgs = {
+export type GetBlockListArgs = {
   connect: AzureConnectInfo;
   logger: ILogger;
-  prefix?: string;
-  delimiter?: string;
-  marker?: string;
-  maxresults?: number;
-  include?: ListBlobsInlcudeArg[];
+  blob: string;
+  type?: 'committed' | 'uncommitted' | 'all';
+
+  snapshot?: string;
+  versionid?: string;
   /**
    * The timeout parameter is expressed in seconds
    * @see https://learn.microsoft.com/en-us/rest/api/storageservices/setting-timeouts-for-blob-service-operations
    */
   timeout?: number;
-  // showonly?: 'deleted' | 'files' | 'directories';
 };
 
 /**
- * @see https://learn.microsoft.com/en-us/rest/api/storageservices/list-blobs
+ * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-block-list
  * @returns XML content
  */
-export function azListBlobs(args: ListBlobsArgs): Promise<string> {
-  const { connect, logger, include } = args;
+export function azGetBlockList(args: GetBlockListArgs): Promise<string> {
+  const { connect, logger } = args;
   const { container } = connect;
 
   const method = "GET";
   const date = new Date();
+  const blob = args.blob.replace(/^\//, '');
 
   const qs = {
-    restype: "container",
-    comp: "list",
-    prefix: args.prefix,
-    delimiter: args.delimiter,
-    marker: args.marker,
-    maxresults: args.maxresults,
-    include: include && include.length > 0 ? include.join(",") : "",
+    comp: "blocklist",
+    blocklisttype: args.type || 'all',
+    snapshot: args.snapshot,
+    versionid: args.versionid,
     timeout: args.timeout,
     // showonly: args.showonly, // error 400
   };
@@ -68,15 +52,15 @@ export function azListBlobs(args: ListBlobsArgs): Promise<string> {
   headers.authorization = createSharedKeyLite({
     verb: method,
     connect,
-    resourceUri: "",
+    resourceUri: args.blob,
     qs,
     headers,
   });
 
-  const uri = getURI(`/${container}`, qs);
+  const uri = getURI(`/${container}/${encodeURI(blob)}`, qs);
 
   return new Promise<string>((resolve, reject) => {
-    const azureResp = new AzureResponseHelper("list blobs", logger, reject);
+    const azureResp = new AzureResponseHelper("get block list", logger, reject);
     let data = "";
 
     logger.verbose(`request list api uri="${uri}" ...`);

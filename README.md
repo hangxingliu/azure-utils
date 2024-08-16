@@ -10,6 +10,8 @@ Standalone Node.js utils for Azure
 - [x] Download file from Azure Blob Storage
 - [x] List files on Azure Blob Storage
 - [x] Delete files on Azure Blob Storage
+- [x] List uncommitted blocks
+- [ ] Resume upload
 
 ## Supported Environment Variables
 

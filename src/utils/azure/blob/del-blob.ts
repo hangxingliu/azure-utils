@@ -2,77 +2,72 @@ import { request } from "node:https";
 
 import { createSharedKeyLite } from "../shared-key-lite.js";
 import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types.js";
+import { AzureResponseHelper } from "../response-helper.js";
 
-const x_ms_version = '2020-10-02'
+const x_ms_version = "2020-10-02";
 
 export type DelBlobArgs = {
-  connect: AzureConnectInfo,
+  connect: AzureConnectInfo;
   blob: string;
-  logger: ILogger,
-}
+  logger: ILogger;
+  permanent?: boolean;
+};
 export type DelBlobResult = {
-  'x-ms-request-id': string;
-  'x-ms-version': string;
-  'x-ms-client-request-id': string;
-  'x-ms-delete-type-permanent': string;
+  "x-ms-request-id": string;
+  "x-ms-version": string;
+  "x-ms-client-request-id": string;
+  "x-ms-delete-type-permanent": string;
   date: string;
-}
+};
 
 export function azDelBlob(args: DelBlobArgs): Promise<DelBlobResult> {
   const { connect, logger } = args;
-  const { container, accountName } = connect;
-  const method = 'DELETE';
+  const { container } = connect;
+  const method = "DELETE";
   const date = new Date();
-  const blob = args.blob.replace(/^\//, '');
+  const blob = args.blob.replace(/^\//, "");
 
+  let qs = '';
+  if (args.permanent) qs = '?deletetype=permanent';
+
+  const canonicalizedHeaders = [
+    `x-ms-date:${date.toUTCString()}`,
+    `x-ms-version:${x_ms_version}`,
+  ].join("\n");
   const authorization = createSharedKeyLite({
     connect,
     verb: method,
     resourceUri: args.blob,
-    canonicalizedHeaders: [
-      `x-ms-date:${date.toUTCString()}`,
-      `x-ms-version:${x_ms_version}`,
-    ].join('\n'),
-  })
+    canonicalizedHeaders,
+  });
 
   return new Promise((resolve, reject) => {
-    let statusCode = -1;
-    let contentType = '';
-    let data = '';
+    const azureResp = new AzureResponseHelper("delete blob", logger, reject);
 
-    const apiPath = `/${container}/${encodeURI(blob)}`;
-    logger.log(`request delete api uri="${apiPath}" ...`)
-    const req = request({
-      host: getAzureBlobHost(connect),
-      path: apiPath,
-      method,
-      headers: {
-        Authorization: authorization,
-        'Content-Length': '0',
-        'x-ms-version': x_ms_version,
-        'x-ms-date': date.toUTCString(),
+    const apiPath = `/${container}/${encodeURI(blob)}${qs}`;
+    logger.log(`request delete api uri="${apiPath}" ...`);
+    const req = request(
+      {
+        host: getAzureBlobHost(connect),
+        path: apiPath,
+        method,
+        headers: {
+          Authorization: authorization,
+          "Content-Length": "0",
+          "x-ms-version": x_ms_version,
+          "x-ms-date": date.toUTCString(),
+        },
+      },
+      (res) => {
+        azureResp.onResponse(res);
+        res.on("data", azureResp.collectData);
+        res.on("end", () => {
+          azureResp.validate(202);
+          resolve(res.headers as any);
+        });
       }
-    }, res => {
-      statusCode = res.statusCode;
-      contentType = res.headers["content-type"];
-
-      res.on('data', (chunk: Buffer) => data += chunk.toString())
-      res.on('end', () => {
-        if (statusCode !== 202)
-          return rejectWithLog(`HTTP status code is not 202 but ${statusCode}`, data);
-        logger.verbose(`api response code=${statusCode}`);
-        resolve(res.headers as any);
-      })
-    })
-    req.on('error', rejectWithLog);
+    );
+    req.on("error", azureResp.reject);
     req.end();
-
-    function rejectWithLog(error: Error | string, details: any) {
-      if (!error) return;
-      const message = typeof error === 'string' ? error : error.message;
-      logger.error(`delete failed! ${message} ${details ? 'details:' : ''}`);
-      if (details) logger.error(details);
-      reject(error);
-    }
   });
 }
