@@ -1,6 +1,7 @@
 import { request } from "node:https";
 import { createSharedKeyLite } from "../shared-key-lite.js";
 import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types.js";
+import { AzureResponseHelper } from "../response-helper.js";
 
 const x_ms_version = '2020-10-02'
 
@@ -54,9 +55,7 @@ export function azPutBlockList(args: PutBlobListArgs): Promise<PutBlockListResul
     `\n</BlockList>`;
 
   return new Promise((resolve, reject) => {
-    let statusCode = -1;
-    let resContentType = '';
-    let data = '';
+    const azureResp = new AzureResponseHelper('put blob', logger, reject);
 
     const headers: any = {
       Authorization: authorization,
@@ -75,26 +74,14 @@ export function azPutBlockList(args: PutBlobListArgs): Promise<PutBlockListResul
       method,
       headers,
     }, res => {
-      statusCode = res.statusCode;
-      resContentType = res.headers["content-type"];
-
-      res.on('data', (chunk: Buffer) => data += chunk.toString())
+      azureResp.onResponse(res);
+      res.on('data', azureResp.collectData);
       res.on('end', () => {
-        if (statusCode !== 201)
-          return rejectWithLog(`HTTP status code is ${statusCode} but not 201`, data);
-        logger.verbose(`api response code=${statusCode} content-type=${resContentType || ''}`);
+        azureResp.validate(201);
         resolve(res.headers as any);
       })
     })
-    req.on('error', rejectWithLog);
+    req.on('error', azureResp.reject);
     req.write(postBody);
-
-    function rejectWithLog(error: Error | string, details: any) {
-      if (!error) return;
-      const message = typeof error === 'string' ? error : error.message;
-      logger.error(`put blob list failed! ${message} ${details ? 'details:' : ''}`);
-      if (details) logger.error(details);
-      reject(error);
-    }
   });
 }

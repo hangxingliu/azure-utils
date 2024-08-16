@@ -1,6 +1,6 @@
 import * as path from "node:path";
 
-import { envVarUsage } from "./helper.js";
+import { envVarUsage, onFatal } from "./helper.js";
 
 import { azPutBlob } from "../utils/azure/blob/put-blob.js";
 import { azCopyBlob } from "../utils/azure/blob/copy-blob.js";
@@ -17,7 +17,7 @@ import { fileStat, getHumanReadableFileSize } from "../utils/file.js";
 import { getContentTypeByExt } from "../utils/content-type.js";
 
 const logger = new Logger(`AzUpload`);
-main().catch(logger.fatal);
+main().catch(e => onFatal(logger, e));
 
 function usage() {
   const bin = 'az-upload';

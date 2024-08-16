@@ -1,6 +1,6 @@
 import { AzureStorageEnv } from "../utils/azure/env.js";
 
-import { envVarUsage } from "./helper.js";
+import { envVarUsage, onFatal } from "./helper.js";
 
 import { azListBlobs } from "../utils/azure/blob/list-blob.js";
 
@@ -11,7 +11,7 @@ import { getHumanReadableFileSize } from "../utils/file.js";
 import { parseListBlobsResult } from "../utils/azure/result-parser.js";
 
 const logger = new Logger(`AzListBlobs`);
-main().catch(logger.fatal);
+main().catch(e => onFatal(logger, e));
 
 function usage() {
   const bin = 'az-ls-blobs';

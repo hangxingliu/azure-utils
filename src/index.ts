@@ -11,6 +11,7 @@ export * from "./utils/azure/blob/put-block.js";
 
 //#region azure algo/utils
 export * from "./utils/azure/env.js";
+export * from "./utils/azure/error.js";
 export * from "./utils/azure/result-parser.js";
 export * from "./utils/azure/shared-key-lite.js";
 export * from "./utils/azure/types.js";

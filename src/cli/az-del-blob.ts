@@ -1,6 +1,6 @@
 import { URL } from "node:url";
 
-import { envVarUsage } from "./helper.js";
+import { envVarUsage, onFatal } from "./helper.js";
 
 import { AzureStorageEnv } from "../utils/azure/env.js";
 import { azDelBlob } from "../utils/azure/blob/del-blob.js";
@@ -10,7 +10,7 @@ import { loadEnvFiles } from "../utils/env.js";
 import { Logger } from "../utils/logger.js";
 
 const logger = new Logger(`AzDelBlob`);
-main().catch(logger.fatal);
+main().catch(e => onFatal(logger, e));
 
 function usage() {
   const bin = 'az-del-blob';

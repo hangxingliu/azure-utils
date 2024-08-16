@@ -2,6 +2,7 @@ import { request } from "node:https";
 
 import { createSharedKeyLite } from "../shared-key-lite.js";
 import { AzureConnectInfo, getAzureBlobHost, ILogger } from "../types.js";
+import { AzureResponseHelper } from "../response-helper.js";
 
 const x_ms_version = '2020-10-02'
 
@@ -56,9 +57,7 @@ export function azCopyBlob(args: CopyBlobArgs): Promise<CopyBlobResult> {
   })
 
   return new Promise((resolve, reject) => {
-    let statusCode = -1;
-    let contentType = '';
-    let data = '';
+    const azureResp = new AzureResponseHelper('put blob', logger, reject);
 
     const apiPath = `/${container}/${encodeURI(blob)}`;
     logger.log(`request copy api uri="${accountName}/${container}/${blob}" x-ms-copy-source="${sourceName}" ...`)
@@ -74,26 +73,14 @@ export function azCopyBlob(args: CopyBlobArgs): Promise<CopyBlobResult> {
         'x-ms-date': date.toUTCString(),
       }
     }, res => {
-      statusCode = res.statusCode;
-      contentType = res.headers["content-type"];
-
-      res.on('data', (chunk: Buffer) => data += chunk.toString())
+      azureResp.onResponse(res);
+      res.on('data', azureResp.collectData);
       res.on('end', () => {
-        if (statusCode !== 201 && statusCode !== 202)
-          return rejectWithLog(`HTTP status code is ${statusCode} but not 201 or 202`, data);
-        logger.verbose(`api response code=${statusCode} x-ms-copy-status=${res.headers['x-ms-copy-status'] || ''}`);
+        azureResp.validate(201, 202);
         resolve(res.headers as any);
       })
     })
-    req.on('error', rejectWithLog);
+    req.on('error', azureResp.reject);
     req.end();
-
-    function rejectWithLog(error: Error | string, details: any) {
-      if (!error) return;
-      const message = typeof error === 'string' ? error : error.message;
-      logger.error(`copy failed! ${message} ${details ? 'details:' : ''}`);
-      if (details) logger.error(details);
-      reject(error);
-    }
   });
 }

@@ -2,7 +2,7 @@ import { URL } from "node:url";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { envVarUsage } from "./helper.js";
+import { envVarUsage, onFatal } from "./helper.js";
 
 import { AzureStorageEnv } from "../utils/azure/env.js";
 import { createSASForBlob } from "../utils/azure/blob/blob-sas.js";
@@ -15,7 +15,7 @@ import { getHumanReadableFileSize } from "../utils/file.js";
 import { downlaodToStream } from "../utils/download.js";
 
 const logger = new Logger(`AzDownload`);
-main().catch(logger.fatal);
+main().catch(e => onFatal(logger, e));
 
 function usage() {
   const bin = 'az-download';
